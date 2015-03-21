@@ -16,6 +16,7 @@
 package edu.frostburg.groupvoicechat.networking;
 
 import edu.frostburg.groupvoicechat.networking.events.EventRouter;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 /**
@@ -32,6 +33,9 @@ public final class PacketContext {
 
     final PacketStruct packetStruct;
     final EventRouter eventRouter;
+
+    InetAddress address;
+    int port;
 
     int senderId;
     int receiverId;
@@ -123,6 +127,22 @@ public final class PacketContext {
 
     public EventRouter getEventRouter() {
         return eventRouter;
+    }
+
+    public InetAddress getAddress() {
+        return address;
+    }
+
+    public void setAddress(InetAddress address) {
+        this.address = address;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public void toByteBuffer(ByteBuffer bb) {

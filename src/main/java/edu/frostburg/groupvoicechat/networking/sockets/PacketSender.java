@@ -16,7 +16,11 @@
 package edu.frostburg.groupvoicechat.networking.sockets;
 
 import edu.frostburg.groupvoicechat.networking.PacketStruct;
-import edu.frostburg.groupvoicechat.networking.Peer;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -24,8 +28,15 @@ import edu.frostburg.groupvoicechat.networking.Peer;
  */
 public class PacketSender {
 
-    public void send(Peer p, PacketStruct ps) {
-        
+    public void send(InetAddress address, int port, PacketStruct ps) throws IOException {
+        DatagramSocket ds = new DatagramSocket();
+        ds.connect(address, port);
 
+        byte[] data = new byte[ps.getSize()];
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        bb.clear();
+        ps.toByteBuffer(bb);
+
+        ds.send(new DatagramPacket(data, data.length));
     }
 }
