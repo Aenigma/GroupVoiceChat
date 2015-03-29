@@ -17,7 +17,7 @@ package edu.frostburg.groupvoicechat.examples;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import javax.sound.sampled.AudioFormat;
 import org.jitsi.impl.neomedia.codec.audio.opus.Opus;
@@ -70,6 +70,11 @@ public class OpusExample {
         final AudioFormat af
                 = new AudioFormat((float) SAMPLE_RATE, 16, 1, true, false);
 
+        final Path tmpFile = Files.createTempFile(null, ".opus");
+
+        System.out.println("java.library.path:\n" + System.getProperty(
+                "java.library.path"));
+        System.out.println("Output file: " + tmpFile);
         System.out.println("Sample Rate: " + af.getSampleRate());
         System.out.println("Frame Rate: " + af.getFrameRate());
         System.out.println("Frame Size: " + af.getFrameSize());
@@ -96,10 +101,9 @@ public class OpusExample {
         Opus.encoder_destroy(encPtr);
 
         System.out.println(Arrays.toString(input));
-        System.out
-                .println(Arrays.toString(Arrays.copyOf(output, encode_result)));
-        Files.write(Paths.get("./out.opus"),
-                Arrays.copyOf(output, encode_result));
+        System.out.println(Arrays.toString(
+                Arrays.copyOf(output, encode_result)));
+        Files.write(tmpFile, Arrays.copyOf(output, encode_result));
 
     }
 }
