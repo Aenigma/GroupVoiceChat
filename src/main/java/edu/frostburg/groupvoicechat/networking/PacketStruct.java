@@ -28,7 +28,7 @@ public final class PacketStruct {
     public byte packetType;
     public byte[] payload;
 
-    private static PacketStruct fromByteBuffer(ByteBuffer bb) {
+    public static PacketStruct fromByteBuffer(ByteBuffer bb) {
 
         /*
          * FIXME: this should not assume that the bytebuffer has everything
@@ -43,6 +43,8 @@ public final class PacketStruct {
         ps.packetId = bb.getLong();
         ps.time = bb.getLong();
         ps.packetType = bb.get();
+        ps.payload = new byte[bb.remaining()];
+        bb.get(ps.payload);
 
         return ps;
     }
