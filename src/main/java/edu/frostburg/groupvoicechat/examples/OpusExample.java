@@ -48,12 +48,18 @@ public class OpusExample {
      */
     private static final int SAMPLE_RATE = VALID_SAMPLE_RATES[0];
 
+    /**
+     * Determined by the frame size in milliseconds. Thus, the number of bytes
+     * required to represent that depends on the sample rate.
+     */
     protected static final int[] VALID_FRAME_SIZES = new int[]{
-        SAMPLE_RATE / 400,
-        SAMPLE_RATE / 200,
-        SAMPLE_RATE / 100,
-        SAMPLE_RATE / 50,
-        SAMPLE_RATE / 25};
+        SAMPLE_RATE / 400, // 2.5ms
+        SAMPLE_RATE / 200, // 5ms
+        SAMPLE_RATE / 100, // 10ms
+        SAMPLE_RATE / 50, // 20ms
+        SAMPLE_RATE / 25, // 40ms
+        (SAMPLE_RATE * 50) / 3 // 60ms
+    };
 
     private static final int FRAME_SIZE = VALID_FRAME_SIZES[4];
 

@@ -70,8 +70,7 @@ public class EventRouterIT {
         EventWrapper<PacketContext> ewpc = new EventWrapper<>(EventType.PACKET);
         ewpc.setContext(new PacketContext(new PacketStruct(), er));
 
-        er.addEvent(ewpc)
-                .get();
+        er.addEvent(ewpc).get();
     }
 
     /**

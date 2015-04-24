@@ -23,6 +23,12 @@ import java.util.Arrays;
  */
 public final class PacketStruct {
 
+    public static final byte PACKET_TYPE_CONNECTION = 0;
+    public static final byte PACKET_TYPE_STATUS = 1;
+    public static final byte PACKET_TYPE_TEXT = 2;
+    public static final byte PACKET_TYPE_AUDIO = 3;
+    public static final byte PACKET_TYPE_ERROR = 127;
+
     public long packetId;
     public long time;
     public byte packetType;
