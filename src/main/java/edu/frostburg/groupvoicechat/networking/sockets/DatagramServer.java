@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 /**
  *
  * @author russell
+ * @author Kevin Raoofi
  */
 public class DatagramServer implements Runnable {
 
@@ -34,7 +35,8 @@ public class DatagramServer implements Runnable {
     private final byte[] receive;
     private final byte[] sent;
 
-    public DatagramServer(EventRouter<EventRouterState> er) throws SocketException {
+    public DatagramServer(EventRouter<EventRouterState> er) throws
+            SocketException {
         this.er = er;
         receive = new byte[BUFFER_SIZE];
         sent = new byte[BUFFER_SIZE];
@@ -45,32 +47,29 @@ public class DatagramServer implements Runnable {
     void makeServer() {
 
         while (true) {
-            DatagramPacket receivePacket = new DatagramPacket(receive, receive.length);
+            DatagramPacket receivePacket = new DatagramPacket(receive,
+                    receive.length);
             try {
                 serverSock.receive(receivePacket);
             } catch (IOException ex) {
-                Logger.getLogger(DatagramServer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatagramServer.class.getName())
+                        .log(Level.SEVERE, null, ex);
             }
-            byte[] packetData = receivePacket.getData();
-            
-            InetAddress IpAddress = receivePacket.getAddress();
-            int port = receivePacket.getPort();
+            final byte[] packetData = receivePacket.getData();
 
-            ByteBuffer bb = ByteBuffer.wrap(packetData);
+            final InetAddress senderAddr = receivePacket.getAddress();
+            final int port = receivePacket.getPort();
 
-            PacketStruct ps = new PacketStruct();
-            ps.packetId = bb.getLong();
-            ps.time = bb.getLong();
-            ps.packetType = bb.get();
-            ps.payload = new byte[bb.remaining()];
-            bb.get(ps.payload);
+            final ByteBuffer bb = ByteBuffer.wrap(packetData);
 
-            PacketContext pc = new PacketContext(ps, er);
-            
-            pc.setAddress(IpAddress);
+            final PacketStruct ps = PacketStruct.fromByteBuffer(bb);
+            final PacketContext pc = new PacketContext(ps, er);
+
+            pc.setAddress(senderAddr);
             pc.setPort(port);
-            
-            EventWrapper<PacketContext> eventWrapper = new EventWrapper<>(EventType.PACKET);
+
+            final EventWrapper<PacketContext> eventWrapper = new EventWrapper<>(
+                    EventType.PACKET);
             eventWrapper.setContext(pc);
 
             er.addEvent(eventWrapper);

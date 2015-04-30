@@ -28,7 +28,18 @@ import java.nio.ByteBuffer;
  */
 public class PacketSender {
 
-    public void send(InetAddress address, int port, PacketStruct ps) throws IOException {
+    private final boolean stamp;
+
+    public PacketSender() {
+        this(true);
+    }
+
+    public PacketSender(boolean stamp) {
+        this.stamp = stamp;
+    }
+
+    public void send(final InetAddress address, final int port,
+            final PacketStruct ps) throws IOException {
         DatagramSocket ds = new DatagramSocket();
         ds.connect(address, port);
 

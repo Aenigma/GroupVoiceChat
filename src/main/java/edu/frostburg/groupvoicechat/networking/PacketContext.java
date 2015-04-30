@@ -149,4 +149,12 @@ public final class PacketContext {
         packetStruct.toByteBuffer(bb);
     }
 
+    public InetAddress getSenderAddress() {
+        return packetStruct.senderAddress;
+    }
+
+    public void setSenderAddress(InetAddress senderAddress) {
+        packetStruct.senderAddress = senderAddress;
+    }
+
 }
