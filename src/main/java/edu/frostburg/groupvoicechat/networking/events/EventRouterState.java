@@ -17,7 +17,9 @@ package edu.frostburg.groupvoicechat.networking.events;
 
 import edu.frostburg.groupvoicechat.commons.Pair;
 import edu.frostburg.groupvoicechat.networking.Peer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,9 +31,24 @@ public class EventRouterState {
     Map<Peer, Integer> pingTable;
     Map<Peer, Pair<String, Long>> pingResponseTable;
 
+    final List<Peer> peerList;
+
     public EventRouterState() {
         pingTable = new HashMap<>();
         pingResponseTable = new HashMap<>();
+        peerList = new ArrayList<>();
+    }
+
+    public void addPeer(Peer p) {
+        peerList.add(p);
+    }
+
+    public void removePeer(Peer p) {
+        peerList.remove(p);
+    }
+
+    public List<Peer> getPeerList() {
+        return peerList;
     }
 
     /**
@@ -47,8 +64,8 @@ public class EventRouterState {
 
         return result;
     }
-    
+
     public void setPingTime(Peer p, int time) {
-        
+
     }
 }
