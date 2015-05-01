@@ -15,12 +15,15 @@
  */
 package edu.frostburg.groupvoicechat.networking.protocol;
 
+import edu.frostburg.groupvoicechat.networking.InvalidPacketDecoder;
 import edu.frostburg.groupvoicechat.networking.PacketDecoder;
 import edu.frostburg.groupvoicechat.networking.PacketStruct;
 import edu.frostburg.groupvoicechat.networking.ReceivingStrategyDispatcher;
 import edu.frostburg.groupvoicechat.networking.events.EventRouter;
 import edu.frostburg.groupvoicechat.networking.events.EventRouterState;
 import edu.frostburg.groupvoicechat.networking.events.EventType;
+
+import static edu.frostburg.groupvoicechat.networking.PacketStruct.*;
 
 /**
  * This class is responsible for the initialization of a server.
@@ -30,6 +33,9 @@ import edu.frostburg.groupvoicechat.networking.events.EventType;
 public class ServerModule {
 
     private static final int largestPacketId;
+
+    private static final PacketDecoder invalidDecoder
+            = new InvalidPacketDecoder();
 
     static {
         byte[] packetIds = new byte[]{
@@ -56,7 +62,14 @@ public class ServerModule {
 
     public void addServerEventHandlers() {
 
-        PacketDecoder pd = new ConnectionPacketDecoder();
+        final ServerRelayDecoder srd = new ServerRelayDecoder();
+        pds[PACKET_TYPE_AUDIO] = srd;
+        pds[PACKET_TYPE_TEXT] = srd;
+
+        pds[PACKET_TYPE_CONNECTION] = new ServerConnectionPacketDecoder();
+
+        pds[PACKET_TYPE_ERROR] = invalidDecoder;
+        pds[PACKET_TYPE_STATUS] = invalidDecoder;
 
         this.eventRouter.register(new ReceivingStrategyDispatcher(pds),
                 EventType.PACKET);
