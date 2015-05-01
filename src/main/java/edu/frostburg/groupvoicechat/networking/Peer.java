@@ -32,7 +32,7 @@ public class Peer {
 
     int pingTime;
 
-    String username;
+    public String username;
 
     Optional<InetSocketAddress> isa;
 

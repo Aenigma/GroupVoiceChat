@@ -15,10 +15,17 @@
  */
 package edu.frostburg.groupvoicechat.gui;
 
+import edu.frostburg.groupvoicechat.networking.PacketStruct;
+import edu.frostburg.groupvoicechat.networking.events.EventRouter;
+import edu.frostburg.groupvoicechat.networking.events.EventRouterState;
+import edu.frostburg.groupvoicechat.networking.sockets.PacketSender;
+import java.awt.EventQueue;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.JOptionPane;
 
 /**
  * Main window to drive the chatting.
@@ -28,9 +35,24 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class ChatWindow extends javax.swing.JFrame {
 
-    /** Creates new form Bad */
-    public ChatWindow() {
+    private final EventRouter<EventRouterState> er;
+
+    private final ConnectionController cc = new ConnectionController();
+
+    String userName = "";
+
+    /** Creates new form
+     *
+     * @param er */
+    public ChatWindow(EventRouter<EventRouterState> er) {
+        this.er = er;
         initComponents();
+    }
+
+    public void addMsg(String msg) {
+        EventQueue.invokeLater(() -> {
+            this.txtAreaMsgBox.append(msg);
+        });
     }
 
     /** This method is called from within the constructor to initialize the
@@ -41,43 +63,44 @@ public class ChatWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
+        btnDisconnect = new javax.swing.JButton();
+        btnConnect = new javax.swing.JButton();
+        txtAddress = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
+        txtPort = new javax.swing.JTextField();
+        btnSettings = new javax.swing.JButton();
+        lblStatus = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblPeers = new javax.swing.JTable();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jTextField5 = new javax.swing.JTextField();
-        jButton4 = new javax.swing.JButton();
+        txtAreaMsgBox = new javax.swing.JTextArea();
+        txtSendMsg = new javax.swing.JTextField();
+        btnSendMsg = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("GroupVoiceChat");
 
-        jButton1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jButton1.setText("Disconnect");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnDisconnect.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        btnDisconnect.setText("Disconnect");
+        btnDisconnect.setEnabled(false);
+        btnDisconnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnDisconnectActionPerformed(evt);
             }
         });
 
-        jButton2.setFont(jButton2.getFont().deriveFont(jButton2.getFont().getSize()+13f));
-        jButton2.setText("Connect");
-
-        jTextField1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jTextField1.setText("131.118.80.40");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        btnConnect.setFont(btnConnect.getFont().deriveFont(btnConnect.getFont().getSize()+13f));
+        btnConnect.setText("Connect");
+        btnConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                btnConnectActionPerformed(evt);
             }
         });
+
+        txtAddress.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        txtAddress.setText("131.118.80.40");
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel1.setText("Address");
@@ -85,21 +108,17 @@ public class ChatWindow extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel2.setText("Port");
 
-        jTextField2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jTextField2.setText("2556");
-        jTextField2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField2ActionPerformed(evt);
-            }
-        });
+        txtPort.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        txtPort.setText("2556");
 
-        jButton3.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jButton3.setText("Settings");
+        btnSettings.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        btnSettings.setText("Settings");
+        btnSettings.setEnabled(false);
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel3.setText("Connected to 10.58.65.2");
+        lblStatus.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        lblStatus.setText("Connected to 10.58.65.2");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblPeers.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {"Russell", "10.155.21.1",  new Boolean(false)},
                 {"Chelsea", "10.658.54.3",  new Boolean(true)},
@@ -118,17 +137,32 @@ public class ChatWindow extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblPeers);
+        if (tblPeers.getColumnModel().getColumnCount() > 0) {
+            tblPeers.getColumnModel().getColumn(0).setHeaderValue("UserID");
+            tblPeers.getColumnModel().getColumn(1).setHeaderValue("Address");
+            tblPeers.getColumnModel().getColumn(2).setHeaderValue("Mute");
+        }
 
-        jTextArea1.setEditable(false);
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setText("Brad: (System) has just connected\nLogan: I am thinking of going to enroll at Frostburg tomorrow...\nKevin: It is a great school. You should apply!\nRussell: (System) Has gone idle\nLogan: I will apply after I am off from work tomorrow!\nChelsea: I just enrolled, it was a very easy process.");
-        jScrollPane2.setViewportView(jTextArea1);
+        txtAreaMsgBox.setEditable(false);
+        txtAreaMsgBox.setColumns(20);
+        txtAreaMsgBox.setRows(5);
+        txtAreaMsgBox.setText("Brad: (System) has just connected\nLogan: I am thinking of going to enroll at Frostburg tomorrow...\nKevin: It is a great school. You should apply!\nRussell: (System) Has gone idle\nLogan: I will apply after I am off from work tomorrow!\nChelsea: I just enrolled, it was a very easy process.");
+        jScrollPane2.setViewportView(txtAreaMsgBox);
 
-        jTextField5.setText("This program is awesome!");
+        txtSendMsg.setText("This program is awesome!");
+        txtSendMsg.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSendMsgActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Send");
+        btnSendMsg.setText("Send");
+        btnSendMsg.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSendMsgActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -151,117 +185,172 @@ public class ChatWindow extends javax.swing.JFrame {
                                         .addGap(110, 110, 110)
                                         .addComponent(filler1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addGap(176, 176, 176))
-                                    .addComponent(jTextField2)
-                                    .addComponent(jTextField1)))
+                                    .addComponent(txtPort)
+                                    .addComponent(txtAddress)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnConnect, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(2, 2, 2)
-                                .addComponent(jButton1)
+                                .addComponent(btnDisconnect)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(btnSettings, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(4, 4, 4))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField5)
+                        .addComponent(txtSendMsg)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnSendMsg))
+                    .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel3)
+                .addComponent(lblStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel2)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4))
+                    .addComponent(txtSendMsg, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSendMsg))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1)
-                    .addComponent(jButton3))
+                    .addComponent(btnConnect)
+                    .addComponent(btnDisconnect)
+                    .addComponent(btnSettings))
                 .addContainerGap())
         );
 
-        jLabel3.getAccessibleContext().setAccessibleName("");
-        jLabel3.getAccessibleContext().setAccessibleDescription("");
-        jButton4.getAccessibleContext().setAccessibleName("Send");
+        lblStatus.getAccessibleContext().setAccessibleName("");
+        lblStatus.getAccessibleContext().setAccessibleDescription("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
-
-    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2ActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set Native look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+    private void btnDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDisconnectActionPerformed
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException |
-                IllegalAccessException |
-                UnsupportedLookAndFeelException ex) {
+            cc.quit();
+            btnSendMsg.setEnabled(false);
+            btnDisconnect.setEnabled(false);
+            btnConnect.setEnabled(true);
+        } catch (IOException ex) {
             Logger.getLogger(ChatWindow.class.getName())
                     .log(Level.SEVERE, null, ex);
         }
-        //</editor-fold>
+    }//GEN-LAST:event_btnDisconnectActionPerformed
 
+    private void btnSendMsgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendMsgActionPerformed
+        try {
+            cc.sendMsg(userName + ": " + txtSendMsg.getText() + "\n");
+            txtSendMsg.setText("");
+        } catch (IOException ex) {
+            Logger.getLogger(ChatWindow.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnSendMsgActionPerformed
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
+    private void txtSendMsgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSendMsgActionPerformed
+        btnSendMsgActionPerformed(evt);
+    }//GEN-LAST:event_txtSendMsgActionPerformed
 
-                ChatWindow chatWindow = new ChatWindow();
-                chatWindow.pack();
-                chatWindow.setMinimumSize(chatWindow.getPreferredSize());
-                chatWindow.setVisible(true);
-            }
-        });
-    }
+    private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
+        try {
+            cc.join();
+
+            btnSendMsg.setEnabled(true);
+            btnDisconnect.setEnabled(true);
+            btnConnect.setEnabled(false);
+
+        } catch (IOException ex) {
+            Logger.getLogger(ChatWindow.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnConnectActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnConnect;
+    private javax.swing.JButton btnDisconnect;
+    private javax.swing.JButton btnSendMsg;
+    private javax.swing.JButton btnSettings;
     private javax.swing.Box.Filler filler1;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField5;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JTable tblPeers;
+    private javax.swing.JTextField txtAddress;
+    private javax.swing.JTextArea txtAreaMsgBox;
+    private javax.swing.JTextField txtPort;
+    private javax.swing.JTextField txtSendMsg;
     // End of variables declaration//GEN-END:variables
+
+    private class ConnectionController {
+
+        PacketSender pSender = new PacketSender();
+
+        public void join() throws IOException {
+            // TODO: this is terrible
+            userName = JOptionPane.showInputDialog("enter username");
+            PacketStruct ps = new PacketStruct();
+            ps.packetId = er.getState()
+                    .getPeerId()
+                    .incrementAndGet();
+            ps.packetId = PacketStruct.PACKET_TYPE_CONNECTION;
+            ps.time = System.currentTimeMillis();
+            ps.senderAddress = InetAddress.getLocalHost();
+            ps.payload = ("JOIN " + userName).getBytes();
+
+            pSender.send(getIsa()
+                    .getAddress(), getIsa()
+                    .getPort(), ps);
+        }
+
+        public void quit() throws IOException {
+            PacketStruct ps = new PacketStruct();
+            ps.packetId = er.getState()
+                    .getPeerId()
+                    .incrementAndGet();
+            ps.packetId = PacketStruct.PACKET_TYPE_CONNECTION;
+            ps.time = System.currentTimeMillis();
+            ps.senderAddress = InetAddress.getLocalHost();
+            ps.payload = "QUIT".getBytes();
+
+            pSender.send(getIsa()
+                    .getAddress(), getIsa()
+                    .getPort(), ps);
+        }
+
+        InetSocketAddress getIsa() {
+            return InetSocketAddress.createUnresolved(txtAddress.getText(),
+                    Integer.parseInt(txtPort.getText()));
+        }
+
+        public void sendMsg(String msg) throws IOException {
+            PacketStruct ps = new PacketStruct();
+            ps.packetId = er.getState()
+                    .getPeerId()
+                    .incrementAndGet();
+            ps.packetId = PacketStruct.PACKET_TYPE_TEXT;
+            ps.time = System.currentTimeMillis();
+            ps.senderAddress = InetAddress.getLocalHost();
+            ps.payload = msg.getBytes();
+
+            pSender.send(getIsa()
+                    .getAddress(), getIsa()
+                    .getPort(), ps);
+        }
+    }
 }

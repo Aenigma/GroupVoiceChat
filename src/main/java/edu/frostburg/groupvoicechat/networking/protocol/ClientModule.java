@@ -16,6 +16,7 @@
 package edu.frostburg.groupvoicechat.networking.protocol;
 
 import edu.frostburg.groupvoicechat.audio.AudioManager;
+import edu.frostburg.groupvoicechat.gui.ChatWindow;
 import edu.frostburg.groupvoicechat.networking.InvalidPacketDecoder;
 import edu.frostburg.groupvoicechat.networking.PacketDecoder;
 import edu.frostburg.groupvoicechat.networking.PacketStruct;
@@ -23,6 +24,7 @@ import edu.frostburg.groupvoicechat.networking.ReceivingStrategyDispatcher;
 import edu.frostburg.groupvoicechat.networking.events.EventRouter;
 import edu.frostburg.groupvoicechat.networking.events.EventRouterState;
 import edu.frostburg.groupvoicechat.networking.events.EventType;
+import java.awt.EventQueue;
 
 import static edu.frostburg.groupvoicechat.networking.PacketStruct.*;
 
@@ -58,12 +60,24 @@ public class ClientModule {
     private final EventRouter<EventRouterState> eventRouter;
     private final PacketDecoder[] pds = new PacketDecoder[largestPacketId];
 
+    private final ChatWindow cw;
+
     public ClientModule() {
         this.eventRouter = new EventRouter<>(new EventRouterState());
         eventRouter.getState()
                 .setEventRouter(eventRouter);
         eventRouter.getState()
                 .setAudioManager(new AudioManager(eventRouter));
+
+        cw = new ChatWindow(eventRouter);
+    }
+
+    public void startGui() {
+        EventQueue.invokeLater(() -> {
+            cw.pack();
+            cw.setMinimumSize(cw.getPreferredSize());
+            cw.setVisible(true);
+        });
     }
 
     public void addEventHandlers() {
@@ -71,7 +85,7 @@ public class ClientModule {
         pds[PACKET_TYPE_CONNECTION] = invalidDecoder;
         pds[PACKET_TYPE_ERROR] = invalidDecoder;
         pds[PACKET_TYPE_STATUS] = invalidDecoder; // TODO: make a status handler
-        pds[PACKET_TYPE_TEXT] = invalidDecoder; // TODO: make a text handler
+        pds[PACKET_TYPE_TEXT] = new ClientTextHandler(cw);
 
         this.eventRouter.register(new ReceivingStrategyDispatcher(pds),
                 EventType.PACKET);
