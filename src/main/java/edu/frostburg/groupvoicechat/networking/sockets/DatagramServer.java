@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
@@ -32,12 +33,14 @@ public class DatagramServer implements Runnable {
 
     private final DatagramSocket serverSock;
     private final EventRouter<EventRouterState> er;
+    private final EventRouterState state;
     private final byte[] receive;
     private final byte[] sent;
 
     public DatagramServer(EventRouter<EventRouterState> er) throws
             SocketException {
         this.er = er;
+        this.state = er.getState();
         receive = new byte[BUFFER_SIZE];
         sent = new byte[BUFFER_SIZE];
         serverSock = new DatagramSocket(PORT_NUMBER);
@@ -57,8 +60,8 @@ public class DatagramServer implements Runnable {
             }
             final byte[] packetData = receivePacket.getData();
 
-            final InetAddress senderAddr = receivePacket.getAddress();
-            final int port = receivePacket.getPort();
+            final InetSocketAddress senderAddr
+                    = (InetSocketAddress) receivePacket.getSocketAddress();
 
             final ByteBuffer bb = ByteBuffer.wrap(packetData);
 
@@ -66,7 +69,7 @@ public class DatagramServer implements Runnable {
             final PacketContext pc = new PacketContext(ps, er);
 
             pc.setAddress(senderAddr);
-            pc.setPort(port);
+            pc.setSender(state.lookUpPeer(senderAddr.getAddress()));
 
             final EventWrapper<PacketContext> eventWrapper = new EventWrapper<>(
                     EventType.PACKET);

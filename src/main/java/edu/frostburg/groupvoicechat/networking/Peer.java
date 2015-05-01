@@ -18,6 +18,7 @@ package edu.frostburg.groupvoicechat.networking;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class represents and endpoint that the service is communicating with.
@@ -31,14 +32,18 @@ public class Peer {
 
     int pingTime;
 
-    InetSocketAddress isa;
+    String username;
+
+    Optional<InetSocketAddress> isa;
 
     // maybe this would be better off as a standalone object?
     final Map<String, Long> pingRequests;
 
-    public Peer(int peerId) {
+    public Peer(int peerId, InetSocketAddress isa) {
         this.peerId = peerId;
         this.pingRequests = new HashMap<>();
+        this.isa = Optional.of(isa);
+
     }
 
     /**
@@ -50,6 +55,14 @@ public class Peer {
         pingRequests.put(challenge, time);
     }
 
+    public Optional<InetSocketAddress> getIsa() {
+        return isa;
+    }
+
+    public void setIsa(InetSocketAddress isa) {
+        this.isa = Optional.of(isa);
+    }
+
     /**
      * Adds a ping request with
      *
@@ -57,6 +70,14 @@ public class Peer {
      */
     public void addPingRequest(String challenge) {
         addPingRequest(challenge, System.currentTimeMillis());
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Override

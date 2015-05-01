@@ -15,8 +15,6 @@
  */
 package edu.frostburg.groupvoicechat.networking.protocol;
 
-import edu.frostburg.groupvoicechat.networking.command.Command;
-import edu.frostburg.groupvoicechat.networking.command.CommandReader;
 import edu.frostburg.groupvoicechat.networking.PacketContext;
 import edu.frostburg.groupvoicechat.networking.PacketDecoder;
 
@@ -24,7 +22,7 @@ import edu.frostburg.groupvoicechat.networking.PacketDecoder;
  *
  * @author Kevin Raoofi
  */
-public abstract class AbstractPacketHandler implements PacketDecoder {
+public abstract class AbstractPacketDecoder implements PacketDecoder {
 
     @Override
     public void processPacket(PacketContext pc) {

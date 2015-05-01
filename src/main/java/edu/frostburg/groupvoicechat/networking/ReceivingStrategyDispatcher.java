@@ -30,10 +30,14 @@ public class ReceivingStrategyDispatcher implements EventHandler<PacketContext> 
         this.pdMap = pd;
     }
 
+    public PacketDecoder getDecoder(byte packetType) {
+        return pdMap[packetType];
+    }
+
     @Override
     public void onEvent(EventWrapper<PacketContext> e) {
         PacketContext p = e.getContext();
-        PacketDecoder pd = pdMap[p.getPacketType()];
+        PacketDecoder pd = getDecoder(p.getPacketType());
         pd.processPacket(p);
     }
 

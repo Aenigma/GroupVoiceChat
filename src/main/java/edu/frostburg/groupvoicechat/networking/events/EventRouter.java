@@ -17,6 +17,7 @@ package edu.frostburg.groupvoicechat.networking.events;
 
 import edu.frostburg.groupvoicechat.commons.Pair;
 import java.util.EnumMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -38,6 +39,7 @@ public class EventRouter<S> {
 
     private final ExecutorService eventProcessor;
     private final ScheduledExecutorService ses;
+    private final ExecutorService threadPool;
 
     /** Whilst our reference to state is immutable, the state object should be
      * mutable so that it can represent changes */
@@ -52,6 +54,7 @@ public class EventRouter<S> {
         this.em = new EnumMap<>(EventType.class);
         this.eventProcessor = Executors.newSingleThreadExecutor();
         this.ses = Executors.newSingleThreadScheduledExecutor();
+        this.threadPool = Executors.newCachedThreadPool();
         this.state = state;
     }
 
@@ -69,6 +72,39 @@ public class EventRouter<S> {
     public <T> Future<?> addScheduledEvent(EventWrapper<T> e, final long delay,
             final TimeUnit t) {
         return ses.schedule(new AddToEventQueue(e), delay, t);
+    }
+
+    /**
+     * submit to async thread pool
+     *
+     * @param <T>
+     * @param task
+     * @return
+     */
+    public <T> Future<T> submitAsync(Callable<T> task) {
+        return threadPool.submit(task);
+    }
+
+    /**
+     * submit to async thread pool
+     *
+     * @param <T>
+     * @param task
+     * @param result
+     * @return
+     */
+    public <T> Future<T> submitAsync(Runnable task, T result) {
+        return threadPool.submit(task, result);
+    }
+
+    /**
+     * submit to async thread pool
+     *
+     * @param task
+     * @return
+     */
+    public Future<?> submitAsync(Runnable task) {
+        return threadPool.submit(task);
     }
 
     /**
@@ -95,6 +131,14 @@ public class EventRouter<S> {
         em.put(et, eh);
     }
 
+    public EventHandler unregister(EventType et) {
+        return em.remove(et);
+    }
+
+    public EventHandler getEventHandler(EventType key) {
+        return em.get(key);
+    }
+
     public S getState() {
         return state;
     }
@@ -102,6 +146,7 @@ public class EventRouter<S> {
     public void shutdown() {
         ses.shutdown();
         eventProcessor.shutdown();
+        threadPool.shutdown();
     }
 
     class AddToEventQueue implements Runnable {

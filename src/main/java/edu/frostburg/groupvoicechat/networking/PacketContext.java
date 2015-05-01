@@ -17,6 +17,7 @@ package edu.frostburg.groupvoicechat.networking;
 
 import edu.frostburg.groupvoicechat.networking.events.EventRouter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
 /**
@@ -25,52 +26,28 @@ import java.nio.ByteBuffer;
  *
  *
  * @author Kevin Raoofi
+ * @param <S> state type in event router state
  */
-public final class PacketContext {
+public final class PacketContext<S> {
 
     /* This class should be expanded to include any and all */
     public static final int ID_UNSET = -1;
 
     final PacketStruct packetStruct;
-    final EventRouter eventRouter;
+    final EventRouter<S> eventRouter;
 
-    InetAddress address;
-    int port;
+    InetSocketAddress address;
 
-    int senderId;
-    int receiverId;
     /**
      * Signifies who sent the packet.
      *
      * Note that sender and receiver should, generally, never be both true.
      */
     Peer sender;
-    /**
-     * Signifies who the packet is destined to be sent to.
-     *
-     * Note that sender and receiver should, generally, never be both true.
-     */
-    Peer receiver;
 
     public PacketContext(PacketStruct packetStruct, EventRouter eventRouter) {
         this.packetStruct = packetStruct;
         this.eventRouter = eventRouter;
-    }
-
-    public int getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(int senderId) {
-        this.senderId = senderId;
-    }
-
-    public int getReceiverId() {
-        return receiverId;
-    }
-
-    public void setReceiverId(int receiverId) {
-        this.receiverId = receiverId;
     }
 
     public PacketStruct getPacketStruct() {
@@ -117,32 +94,16 @@ public final class PacketContext {
         this.sender = sender;
     }
 
-    public Peer getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(Peer receiver) {
-        this.receiver = receiver;
-    }
-
-    public EventRouter getEventRouter() {
+    public EventRouter<S> getEventRouter() {
         return eventRouter;
     }
 
-    public InetAddress getAddress() {
+    public InetSocketAddress getAddress() {
         return address;
     }
 
-    public void setAddress(InetAddress address) {
+    public void setAddress(InetSocketAddress address) {
         this.address = address;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
     public void toByteBuffer(ByteBuffer bb) {

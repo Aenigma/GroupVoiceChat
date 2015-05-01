@@ -18,7 +18,6 @@ package edu.frostburg.groupvoicechat.networking.protocol;
 import edu.frostburg.groupvoicechat.networking.command.Command;
 import edu.frostburg.groupvoicechat.networking.command.CommandReader;
 import edu.frostburg.groupvoicechat.networking.PacketContext;
-import edu.frostburg.groupvoicechat.networking.PacketDecoder;
 import edu.frostburg.groupvoicechat.networking.PacketStruct;
 import edu.frostburg.groupvoicechat.networking.events.EventRouter;
 
@@ -26,7 +25,7 @@ import edu.frostburg.groupvoicechat.networking.events.EventRouter;
  *
  * @author Kevin Raoofi
  */
-public class ConnectionPacketHandler extends AbstractPacketHandler {
+public class ConnectionPacketDecoder extends AbstractPacketDecoder {
 
     @Override
     public void processPacket(PacketContext pc) {
